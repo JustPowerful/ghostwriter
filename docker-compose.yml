@@ -1,0 +1,16 @@
+version: "1.0"
+services:
+  postgres:
+    container_name: ghostwriter_postgres
+    image: postgres:13
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_USER=ghostwriter
+      - POSTGRES_PASSWORD=ghostwriter
+      - POSTGRES_DB=ghostwriter
+    networks:
+      - ghostwriter
+
+networks:
+  ghostwriter:
