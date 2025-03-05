@@ -17,6 +17,7 @@ model User {
   id        String   @id @default(cuid())
   email     String   @unique
   password String 
+  workspaces Workspace[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt 
 }
@@ -25,21 +26,33 @@ model Workspace {
   id String @id @default(cuid())
   title String
   email String // main email to send the updates
+  userId String
+  user User @relation(fields: [userId], references: [id])
   ccEmails String[] // CC emails for the workspace
   createAt DateTime @default(now()) 
   updatedAt DateTime @updatedAt 
-  doneTasks DoneTasks[]
+  tasks Tasks[]
 }
 
-model DoneTasks {
+model Tasks {
   id String @id @default(cuid())
   title String
-  description String
+  description String?
   
+  status TaskStatus @default(TODO) // to store the status of the task
+  doneAt DateTime? // to store the data when the task was completed
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   workspace Workspace @relation(fields: [workspaceId], references: [id])
   workspaceId String
+}
+
+
+enum TaskStatus {
+  TODO
+  INPROGRESS
+  DONE
 }
 
