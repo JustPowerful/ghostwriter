@@ -15,6 +15,8 @@ datasource db {
 
 model User {
   id        String   @id @default(cuid())
+  firstname String
+  lastname String
   email     String   @unique
   password String 
   workspaces Workspace[]
@@ -25,7 +27,10 @@ model User {
 model Workspace {
   id String @id @default(cuid())
   title String
+  
+  receiverName String // main email receiver name
   email String // main email to send the updates
+
   userId String
   user User @relation(fields: [userId], references: [id])
   ccEmails String[] // CC emails for the workspace
@@ -54,5 +59,6 @@ enum TaskStatus {
   TODO
   INPROGRESS
   DONE
+  ARCHIVED // to store the task in the archive, this will not be shown in the main task list
 }
 
