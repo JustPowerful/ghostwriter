@@ -5,6 +5,7 @@ import { CheckCheck, Layout, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import CreateTaskDialog from "./components/create-task-dialog";
 import Task from "./components/task";
+import GenerateEmailDialog from "./components/generate-email-dialog";
 
 const page = async ({ params }: { params: Promise<{ id: string }> }) => {
   const { id } = await params;
@@ -45,7 +46,10 @@ const page = async ({ params }: { params: Promise<{ id: string }> }) => {
           {" "}
           <Layout /> {workspace.title}
         </h1>
-        <CreateTaskDialog workspaceId={workspace.id} />
+        <div className="flex gap-2 items-center">
+          <CreateTaskDialog workspaceId={workspace.id} />
+          <GenerateEmailDialog workspaceId={workspace.id} />
+        </div>
       </div>
       <h2 className="text-2xl font-semibold flex items-center gap-2 mt-6">
         <CheckCheck /> Current Tasks
