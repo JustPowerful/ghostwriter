@@ -1,36 +1,18 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/0fa4ea05-6d7a-4d06-a7ce-fa78f3409bd8" width="250px"/>
+  <h1>Ghostwriter</h1>
+</div>
 
-## Getting Started
+Ghostwriter is a simple task management system written in Next.js with an automation tool to write a summary email of what you done recently to your boss without having to write it manually. The application uses OpenAI's API JavaScript Module to actually generate the email, you can play with the prompt and tweak it to improve it.
 
-First, run the development server:
+The future version of the application will include an automated scheduled mailing, including the main user validation before sending if the user enables the parameter.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+I'm working on a good roadmap and if anyone wants to join this open-source project, please reach me at: ahmedaminedoudech@gmail.com
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/36d8ef45-5308-48e6-aeef-257f0a328071" width="250px"/>
+  <h2>Authors</h2>
+</div>
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Ahmed Amine Doudech (JustPowerful)
