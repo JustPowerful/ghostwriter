@@ -29,6 +29,7 @@ const CreateWorkspaceDialog = () => {
         title: formData.get("title") as string,
         email: formData.get("email") as string,
         ccEmails: ccEmails,
+        receiverName: formData.get("receiverName") as string,
       });
     } catch (error) {
       console.error(error);
@@ -56,6 +57,10 @@ const CreateWorkspaceDialog = () => {
           <div className="flex flex-col gap-2">
             <Label>Workspace Title</Label>
             <Input className="" placeholder="Workspace title" name="title" />
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label>Receiver Name</Label>
+            <Input placeholder="i.e: John Doe" name="receiverName" />
           </div>
           <div className="flex flex-col gap-2">
             <Label>Target email</Label>

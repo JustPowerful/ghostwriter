@@ -9,11 +9,12 @@ const schema = z.object({
   title: z.string().nonempty(),
   email: z.string().email(),
   ccEmails: z.array(z.string().email()).optional(),
+  receiverName: z.string().nonempty(),
 });
 
 export const createWorkspaceAction = actionClient
   .schema(schema)
-  .action(async ({ parsedInput: { title, email, ccEmails } }) => {
+  .action(async ({ parsedInput: { title, email, ccEmails, receiverName } }) => {
     try {
       const session = await auth();
       if (!session) {
@@ -28,6 +29,7 @@ export const createWorkspaceAction = actionClient
           email: email,
           ccEmails: ccEmails,
           userId: session.user.id!,
+          receiverName: receiverName,
         },
       });
       revalidatePath("/dashboard");
