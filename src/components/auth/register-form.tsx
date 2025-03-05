@@ -32,6 +32,8 @@ const RegisterForm = () => {
               email: formData.get("email") as string,
               password: formData.get("password") as string,
               confirmPassword: formData.get("confirmPassword") as string,
+              firstname: formData.get("firstname") as string,
+              lastname: formData.get("lastname") as string,
             });
             if (response) {
               if (response.validationErrors) {
@@ -46,10 +48,11 @@ const RegisterForm = () => {
                 setErrorMessages(errors);
                 return;
               }
-              if (!response.data!.success) {
-                setErrorMessages((prev) => [...prev, response.data!.message]);
-                return;
-              }
+              console.log(response);
+              // if (!response.data!.success) {
+              //   setErrorMessages((prev) => [...prev, response.data!.message]);
+              //   return;
+              // }
               router.push("/login");
             }
           } finally {
@@ -63,6 +66,25 @@ const RegisterForm = () => {
             errorMessages.map((message) => (
               <div className="text-red-500 text-center py-2">{message}</div>
             ))}
+
+          <div className="mb-2">
+            <Label className="mb-2">Firstname</Label>
+            <Input
+              type="text"
+              placeholder="Firstname"
+              className="w-full"
+              name="firstname"
+            />{" "}
+          </div>
+          <div className="mb-2">
+            <Label className="mb-2">Lastname</Label>
+            <Input
+              type="text"
+              placeholder="Lastname"
+              className="w-full"
+              name="lastname"
+            />{" "}
+          </div>
           <div>
             <Label className="mb-2">Email</Label>
             <Input

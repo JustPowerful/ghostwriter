@@ -5,12 +5,15 @@ import { actionClient } from "@/lib/safe-action";
 import { db } from "@/lib/prisma/db";
 import bcrypt from "bcryptjs";
 import { Prisma } from "@prisma/client";
+import { error } from "console";
 
 const schema = z
   .object({
     email: z.string().email(),
     password: z.string().min(6),
     confirmPassword: z.string().min(6),
+    firstname: z.string().min(2),
+    lastname: z.string().min(2),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords do not match",
@@ -19,13 +22,16 @@ const schema = z
 
 export const registerAction = actionClient
   .schema(schema)
-  .action(async ({ parsedInput: { email, password } }) => {
+  .action(async ({ parsedInput: { email, password, firstname, lastname } }) => {
     try {
+      console.log(email, password, firstname, lastname);
       const hashedPassword = await bcrypt.hash(password, 10);
       await db.user.create({
         data: {
           email,
           password: hashedPassword,
+          firstname,
+          lastname,
         },
       });
       return {
@@ -44,4 +50,5 @@ export const registerAction = actionClient
         }
       }
     }
+    throw error;
   });
