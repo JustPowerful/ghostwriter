@@ -20,14 +20,16 @@ const Task = ({
   id: string;
   title: string;
   description?: string | null;
-  status: "TODO" | "INPROGRESS" | "DONE";
+  status: "TODO" | "INPROGRESS" | "DONE" | "ARCHIVED";
 }) => {
   const [currentStatus, setCurrentStatus] = useState<
-    "TODO" | "INPROGRESS" | "DONE"
+    "TODO" | "INPROGRESS" | "DONE" | "ARCHIVED"
   >(status);
   const router = useRouter();
 
-  const handleStatusChange = async (value: "TODO" | "INPROGRESS" | "DONE") => {
+  const handleStatusChange = async (
+    value: "TODO" | "INPROGRESS" | "DONE" | "ARCHIVED"
+  ) => {
     setCurrentStatus(value);
     await fetch("/api/updateTaskStatus", {
       method: "POST",
@@ -44,7 +46,9 @@ const Task = ({
         <Select
           value={currentStatus}
           onValueChange={(value) => {
-            handleStatusChange(value as "TODO" | "INPROGRESS" | "DONE");
+            handleStatusChange(
+              value as "TODO" | "INPROGRESS" | "DONE" | "ARCHIVED"
+            );
           }}
         >
           <SelectTrigger className="w-[120px]">
@@ -54,6 +58,7 @@ const Task = ({
             <SelectItem value="TODO">TODO</SelectItem>
             <SelectItem value="INPROGRESS">INPROGRESS</SelectItem>
             <SelectItem value="DONE">DONE</SelectItem>
+            <SelectItem value="ARCHIVED">ARCHIVED</SelectItem>
           </SelectContent>
         </Select>
         <Button variant="secondary">
