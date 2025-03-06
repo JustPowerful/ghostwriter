@@ -9,7 +9,101 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Edit } from "lucide-react";
+import { Edit, Loader2, Text } from "lucide-react";
+
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Label } from "@radix-ui/react-label";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { updateTaskAction } from "@/actions/task/update-task-action";
+import { title } from "process";
+
+const UpdateTaskDialog = ({
+  taskId,
+  title,
+  description,
+}: {
+  taskId: string;
+  title: string;
+  description?: string;
+}) => {
+  const [toggle, setToggle] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    try {
+      setLoading(true);
+      const formData = new FormData(event.currentTarget);
+      const title = formData.get("title") as string;
+      const description = formData.get("description") as string;
+      const response = await updateTaskAction({
+        taskId,
+        title,
+        description,
+      });
+      if (response?.data?.success) {
+        setToggle(false);
+      } else {
+        console.log(response?.data?.message);
+      }
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div>
+      <Button
+        onClick={() => {
+          setToggle(true);
+        }}
+        variant="secondary"
+      >
+        <Text />
+      </Button>
+      <Dialog open={toggle} onOpenChange={setToggle}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Task</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleSubmit}>
+            <div className="flex flex-col gap-1">
+              <Label>Title</Label>
+              <Input
+                placeholder="Task title"
+                name="title"
+                defaultValue={title}
+              />
+            </div>
+            <div className="flex flex-col gap-1 mb-2">
+              <Label>Description</Label>
+              <Textarea
+                placeholder="Task description"
+                name="description"
+                defaultValue={description}
+              />
+            </div>
+            <Button className="w-full" type="submit">
+              {loading ? (
+                <Loader2 className="w-6 h-6 animate-spin" />
+              ) : (
+                "Create Task"
+              )}
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+};
 
 const Task = ({
   id,
@@ -61,9 +155,11 @@ const Task = ({
             <SelectItem value="ARCHIVED">ARCHIVED</SelectItem>
           </SelectContent>
         </Select>
-        <Button variant="secondary">
-          <Edit />
-        </Button>
+        <UpdateTaskDialog
+          taskId={id}
+          title={title}
+          description={description!}
+        />
       </div>
     </div>
   );
