@@ -21,7 +21,6 @@ import { Label } from "@radix-ui/react-label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { updateTaskAction } from "@/actions/task/update-task-action";
-import { title } from "process";
 
 const UpdateTaskDialog = ({
   taskId,
@@ -62,12 +61,13 @@ const UpdateTaskDialog = ({
   return (
     <div>
       <Button
-        onClick={() => {
+        onClick={(event) => {
+          event.stopPropagation();
           setToggle(true);
         }}
         variant="secondary"
       >
-        <Text />
+        <Edit />
       </Button>
       <Dialog open={toggle} onOpenChange={setToggle}>
         <DialogContent>
@@ -134,34 +134,42 @@ const Task = ({
   };
 
   return (
-    <div className="bg-white shadow-xl m-2 p-4 rounded-md flex justify-between items-center">
-      <div>{title}</div>{" "}
-      <div className="flex items-center gap-2">
-        <Select
-          value={currentStatus}
-          onValueChange={(value) => {
-            handleStatusChange(
-              value as "TODO" | "INPROGRESS" | "DONE" | "ARCHIVED"
-            );
-          }}
-        >
-          <SelectTrigger className="w-[120px]">
-            <SelectValue placeholder="Theme" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="TODO">TODO</SelectItem>
-            <SelectItem value="INPROGRESS">INPROGRESS</SelectItem>
-            <SelectItem value="DONE">DONE</SelectItem>
-            <SelectItem value="ARCHIVED">ARCHIVED</SelectItem>
-          </SelectContent>
-        </Select>
-        <UpdateTaskDialog
-          taskId={id}
-          title={title}
-          description={description!}
-        />
+    <>
+      <div
+        className="bg-white shadow-2xl cursor-grab  py-2 px-4 my-2 rounded-md flex justify-between items-center"
+        draggable
+        onDragStart={(e) => {
+          e.dataTransfer.setData("taskId", id);
+        }}
+      >
+        <div>{title}</div>{" "}
+        <div className="flex items-center gap-2">
+          <Select
+            value={currentStatus}
+            onValueChange={(value) => {
+              handleStatusChange(
+                value as "TODO" | "INPROGRESS" | "DONE" | "ARCHIVED"
+              );
+            }}
+          >
+            <SelectTrigger className="w-[120px]">
+              <SelectValue placeholder="Theme" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="TODO">Todo 📝</SelectItem>
+              <SelectItem value="INPROGRESS">In Progress 🕒</SelectItem>
+              <SelectItem value="DONE">Done ✅</SelectItem>
+              <SelectItem value="ARCHIVED">Archived 📖</SelectItem>
+            </SelectContent>
+          </Select>
+          <UpdateTaskDialog
+            taskId={id}
+            title={title}
+            description={description!}
+          />
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

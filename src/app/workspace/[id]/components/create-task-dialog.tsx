@@ -40,6 +40,7 @@ const CreateTaskDialog = ({ workspaceId }: { workspaceId: string }) => {
   return (
     <div>
       <Button
+        variant="secondary"
         onClick={() => {
           setToggle(true);
         }}
