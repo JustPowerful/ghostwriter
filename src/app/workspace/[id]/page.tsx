@@ -2,11 +2,11 @@ import { db } from "@/lib/prisma/db";
 import React from "react";
 import { auth } from "@/lib/auth/auth";
 import { CheckCheck, Layout, Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import CreateTaskDialog from "./components/create-task-dialog";
 import Task from "./components/task";
 import GenerateEmailDialog from "./components/generate-email-dialog";
 import DragDropZone from "./components/DragDropZone";
+import AddMemberDialog from "./components/add-member-dialog";
 
 const page = async ({ params }: { params: Promise<{ id: string }> }) => {
   const { id } = await params;
@@ -39,6 +39,20 @@ const page = async ({ params }: { params: Promise<{ id: string }> }) => {
       status: "DONE",
     },
   });
+  const members = await db.member.findMany({
+    where: {
+      workspaceId: id,
+    },
+    include: {
+      user: {
+        select: {
+          id: true,
+          firstname: true,
+          lastname: true,
+        },
+      },
+    },
+  });
 
   return (
     <div className="p-6">
@@ -50,6 +64,7 @@ const page = async ({ params }: { params: Promise<{ id: string }> }) => {
         <div className="flex gap-2 items-center">
           <CreateTaskDialog workspaceId={workspace.id} />
           <GenerateEmailDialog workspaceId={workspace.id} />
+          <AddMemberDialog workspaceId={workspace.id} members={members} />
         </div>
       </div>
       <h2 className="text-2xl font-semibold flex items-center gap-2 mt-6">
