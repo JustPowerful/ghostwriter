@@ -42,7 +42,7 @@ export const updateTaskAction = actionClient
         },
       });
 
-      const member = await db.members.findFirst({
+      const member = await db.member.findFirst({
         where: {
           workspaceId,
           userId: session.user.id,
