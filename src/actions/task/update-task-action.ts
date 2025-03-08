@@ -41,8 +41,16 @@ export const updateTaskAction = actionClient
           userId: session.user.id,
         },
       });
-      // if the user is not the owner of the workspace and the task
-      if (!workspace) {
+
+      const member = await db.members.findFirst({
+        where: {
+          workspaceId,
+          userId: session.user.id,
+        },
+      });
+
+      // Check if the user is a member of the workspace or the owner of the workspace
+      if (!workspace && !member) {
         return {
           success: false,
           message: "Workspace not found",

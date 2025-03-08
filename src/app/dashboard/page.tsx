@@ -8,7 +8,16 @@ const page = async () => {
   const session = await auth();
   const workspaces = await db.workspace.findMany({
     where: {
-      userId: session?.user.id!,
+      OR: [
+        { userId: session?.user.id! },
+        {
+          members: {
+            some: {
+              userId: session?.user.id!,
+            },
+          },
+        },
+      ],
     },
   });
   return (

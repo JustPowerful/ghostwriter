@@ -29,8 +29,14 @@ export const createTaskAction = actionClient
           userId: session.user.id,
         },
       });
+      const member = await db.member.findFirst({
+        where: {
+          userId: session.user.id,
+          workspaceId,
+        },
+      });
 
-      if (!workspace) {
+      if (!workspace && !member) {
         return {
           success: false,
           message: "Workspace not found",

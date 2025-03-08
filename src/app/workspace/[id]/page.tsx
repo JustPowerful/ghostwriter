@@ -12,12 +12,28 @@ const page = async ({ params }: { params: Promise<{ id: string }> }) => {
   const { id } = await params;
   const session = await auth();
 
-  const workspace = await db.workspace.findUnique({
+  const owner = await db.workspace.findUnique({
     where: {
       id: id,
       userId: session!.user.id!,
     },
   });
+  const member = await db.member.findFirst({
+    where: {
+      workspaceId: id,
+      userId: session!.user.id!,
+    },
+  });
+  if (!owner && !member) {
+    return <div>Workspace not found</div>;
+  }
+
+  const workspace = await db.workspace.findUnique({
+    where: {
+      id: id,
+    },
+  });
+
   if (!workspace) {
     return <div>Workspace not found</div>;
   }
