@@ -23,6 +23,7 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt 
   membership Member[] 
+  assignments Assignee[]
 }
 
 model Workspace {
@@ -51,6 +52,16 @@ model Member {
   updatedAt DateTime @updatedAt
 }
 
+model Assignee {
+  id String @id @default(cuid())
+  userId String
+  user User @relation(fields: [userId], references: [id])
+  taskId String
+  task Tasks @relation(fields: [taskId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt 
+}
+
 model Tasks {
   id String @id @default(cuid())
   title String
@@ -61,6 +72,8 @@ model Tasks {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  assignments Assignee[]
 
   workspace Workspace @relation(fields: [workspaceId], references: [id])
   workspaceId String

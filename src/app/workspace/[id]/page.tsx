@@ -65,6 +65,11 @@ const page = async ({ params }: { params: Promise<{ id: string }> }) => {
           id: true,
           firstname: true,
           lastname: true,
+          assignments: {
+            select: {
+              taskId: true,
+            },
+          },
         },
       },
     },
@@ -96,6 +101,8 @@ const page = async ({ params }: { params: Promise<{ id: string }> }) => {
             <h3 className="text-xl font-semibold mb-2">Todo / Backlog 📝</h3>
             {tasksTodo.map((task) => (
               <Task
+                currentUserId={session!.user.id!}
+                workspaceMembers={members}
                 key={task.id}
                 title={task.title}
                 description={task.description}
@@ -110,6 +117,8 @@ const page = async ({ params }: { params: Promise<{ id: string }> }) => {
             <h3 className="text-xl font-semibold mb-2">In Progress 🕒</h3>
             {tasksInProgress.map((task) => (
               <Task
+                currentUserId={session!.user.id!}
+                workspaceMembers={members}
                 key={task.id}
                 title={task.title}
                 description={task.description}
@@ -124,6 +133,8 @@ const page = async ({ params }: { params: Promise<{ id: string }> }) => {
             <h3 className="text-xl font-semibold mb-2">Done ✅</h3>
             {tasksDone.map((task) => (
               <Task
+                currentUserId={session!.user.id!}
+                workspaceMembers={members}
                 key={task.id}
                 title={task.title}
                 description={task.description}
