@@ -138,7 +138,7 @@ interface WorkspaceMember {
 
 interface Assignment {
   taskId: string;
-  assigneeId: string;
+  userId: string;
 }
 
 const MemberAssignLabel = ({

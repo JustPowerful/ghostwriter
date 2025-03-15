@@ -7,10 +7,9 @@ import Task from "./components/task";
 import GenerateEmailDialog from "./components/generate-email-dialog";
 import DragDropZone from "./components/DragDropZone";
 import AddMemberDialog from "./components/add-member-dialog";
-import { Button, buttonVariants } from "@/components/ui/button";
-import { redirect } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { buttonVariants } from "@/components/ui/button";
 
 const page = async ({ params }: { params: Promise<{ id: string }> }) => {
   const { id } = await params;
@@ -72,6 +71,7 @@ const page = async ({ params }: { params: Promise<{ id: string }> }) => {
           assignments: {
             select: {
               taskId: true,
+              userId: true,
             },
           },
         },

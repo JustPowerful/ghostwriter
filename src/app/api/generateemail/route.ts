@@ -44,7 +44,7 @@ export async function POST(request: Request) {
         '''
         ${workspace.tasks
           .map(
-            (task: any) =>
+            (task: { title: string; description: string }) =>
               `Task: ${task.title}\nDescription: ${task.description}`
           )
           .join("\n")}
@@ -96,9 +96,11 @@ export async function POST(request: Request) {
               controller.enqueue(encoder.encode(content));
             }
           }
-        } catch (error: any) {
-          console.error("Stream error:", error);
-          controller.enqueue(encoder.encode(`Error: ${error.message}`));
+        } catch (error: unknown) {
+          if (error instanceof Error) {
+            console.error("Stream error:", error);
+            controller.enqueue(encoder.encode(`Error: ${error!.message}`));
+          }
         } finally {
           controller.close();
         }
