@@ -1,12 +1,16 @@
 import { db } from "@/lib/prisma/db";
 import React from "react";
 import { auth } from "@/lib/auth/auth";
-import { CheckCheck, Layout, Plus } from "lucide-react";
+import { CheckCheck, ChevronLeft, Layout } from "lucide-react";
 import CreateTaskDialog from "./components/create-task-dialog";
 import Task from "./components/task";
 import GenerateEmailDialog from "./components/generate-email-dialog";
 import DragDropZone from "./components/DragDropZone";
 import AddMemberDialog from "./components/add-member-dialog";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { redirect } from "next/navigation";
+import Link from "next/link";
+import { cn } from "@/lib/utils";
 
 const page = async ({ params }: { params: Promise<{ id: string }> }) => {
   const { id } = await params;
@@ -78,10 +82,21 @@ const page = async ({ params }: { params: Promise<{ id: string }> }) => {
   return (
     <div className="p-6">
       <div className="flex items-center justify-between bg-slate-900 text-white p-4 rounded-xl">
-        <h1 className="text-3xl font-semibold flex items-center gap-2">
-          {" "}
-          <Layout /> {workspace.title}
-        </h1>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/dashboard"
+            className={cn(
+              buttonVariants(),
+              "hover:bg-zinc-200 hover:text-slate-900"
+            )}
+          >
+            <ChevronLeft /> Back
+          </Link>
+          <h1 className="text-3xl font-semibold flex items-center gap-2">
+            {" "}
+            <Layout /> {workspace.title}
+          </h1>
+        </div>
         <div className="flex gap-2 items-center">
           <CreateTaskDialog workspaceId={workspace.id} />
           <GenerateEmailDialog workspaceId={workspace.id} />

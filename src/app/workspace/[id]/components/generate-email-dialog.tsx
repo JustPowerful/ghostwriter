@@ -9,8 +9,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { AtSign, Loader2 } from "lucide-react";
+import { AtSign, CopyIcon, Loader2 } from "lucide-react";
 import Image from "next/image";
+import { cn } from "@/lib/utils";
 
 const GenerateEmailDialog = ({ workspaceId }: { workspaceId: string }) => {
   const [toggle, setToggle] = useState(false);
@@ -91,6 +92,18 @@ const GenerateEmailDialog = ({ workspaceId }: { workspaceId: string }) => {
     }
   }
 
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    if (copied) {
+      const timeout = setTimeout(() => {
+        setCopied(false);
+      }, 3000);
+
+      return () => clearTimeout(timeout);
+    }
+  }, [copied]);
+
   return (
     <div>
       <Button onClick={() => setToggle(true)}>
@@ -118,6 +131,22 @@ const GenerateEmailDialog = ({ workspaceId }: { workspaceId: string }) => {
             )}
           </DialogHeader>
 
+          {emailContent && (
+            <Button
+              className={cn(
+                "mt-2",
+                copied && "bg-green-500 hover:bg-green-500"
+              )}
+              type="button"
+              onClick={() => {
+                navigator.clipboard.writeText(emailContent);
+                setCopied(true);
+              }}
+              disabled={loading}
+            >
+              <CopyIcon /> {copied ? "Copied!" : "Copy Email Content"}
+            </Button>
+          )}
           {/* Always show email content area when loading or when we have content */}
           {(loading || emailContent) && (
             <div className="mt-2">
@@ -130,7 +159,7 @@ const GenerateEmailDialog = ({ workspaceId }: { workspaceId: string }) => {
 
               <div className="text-sm font-semibold">Email Content:</div>
               <div className="relative mt-2 rounded-md border border-input bg-background p-4">
-                <pre className="text-sm whitespace-pre-wrap break-words">
+                <pre className="text-sm whitespace-pre-wrap break-words max-h-[300px] overflow-y-auto">
                   {emailContent || (loading ? "|" : "")}
                 </pre>
                 {loading && !emailContent && (

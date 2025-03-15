@@ -13,6 +13,7 @@ import {
   BookmarkCheck,
   Edit,
   Loader2,
+  TextIcon,
   User2,
   UserPlus2,
   Users2,
@@ -115,18 +116,51 @@ const UpdateTaskDialog = ({
   );
 };
 
+interface Member {
+  id: string;
+  user: {
+    id: string;
+    firstname: string;
+    lastname: string;
+    assignments: Assignment[];
+  };
+}
+
+interface WorkspaceMember {
+  id: string;
+  user: {
+    id: string;
+    firstname: string;
+    lastname: string;
+    assignments: Assignment[];
+  };
+}
+
+interface Assignment {
+  taskId: string;
+  assigneeId: string;
+}
+
 const MemberAssignLabel = ({
   member,
   taskId,
 }: {
-  member: any;
+  member: {
+    id: string;
+    user: {
+      id: string;
+      firstname: string;
+      lastname: string;
+      assignments: Assignment[];
+    };
+  };
   taskId: string;
 }) => {
   const [loading, setLoading] = useState(false);
 
   // Check if the user is assigned to this task
   const isAssigned = member.user.assignments?.some(
-    (assignment: any) => assignment.taskId === taskId
+    (assignment) => assignment.taskId === taskId
   );
 
   return (
@@ -184,7 +218,15 @@ const AssignmentDialog = ({
   workspaceMembers,
   taskId,
 }: {
-  workspaceMembers: any;
+  workspaceMembers: {
+    id: string;
+    user: {
+      id: string;
+      firstname: string;
+      lastname: string;
+      assignments: Assignment[];
+    };
+  }[];
   taskId: string;
 }) => {
   const [toggle, setToggle] = useState(false);
@@ -205,7 +247,7 @@ const AssignmentDialog = ({
             <DialogTitle>Manage assignment</DialogTitle>
           </DialogHeader>
           <div className="flex flex-col gap-2">
-            {workspaceMembers.map((member: any) => (
+            {workspaceMembers.map((member: Member) => (
               <MemberAssignLabel
                 key={member.id}
                 member={member}
@@ -231,7 +273,7 @@ const Task = ({
   title: string;
   description?: string | null;
   status: "TODO" | "INPROGRESS" | "DONE" | "ARCHIVED";
-  workspaceMembers: any;
+  workspaceMembers: WorkspaceMember[];
   currentUserId: string; // Add type for the new prop
 }) => {
   const [currentStatus, setCurrentStatus] = useState<
@@ -240,17 +282,17 @@ const Task = ({
   const router = useRouter();
 
   // Compute if task has an assigned user
-  const isTaskAssigned = workspaceMembers.some((member: any) =>
-    member.user.assignments?.some((assignment: any) => assignment.taskId === id)
+  const isTaskAssigned = workspaceMembers.some((member) =>
+    member.user.assignments?.some((assignment) => assignment.taskId === id)
   );
 
   console.log(workspaceMembers);
   // Check if current user is assigned to this task
   const isCurrentUserAssigned = workspaceMembers.some(
-    (member: any) =>
+    (member: Member) =>
       member.user.id === currentUserId &&
       member.user.assignments?.some(
-        (assignment: any) => assignment.taskId === id
+        (assignment: Assignment) => assignment.taskId === id
       )
   );
 
@@ -295,37 +337,40 @@ const Task = ({
             <AssignmentDialog taskId={id} workspaceMembers={workspaceMembers} />
           </div>
         </div>
-        <div className="flex items-center justify-end gap-2 mt-2">
+        <div className="flex items-center justify-between gap-2 mt-2">
+          {description && <TextIcon color="gray" />}
           {/* Display the number of assigned members */}
-          <div className="bg-zinc-200 text-zinc-600 p-1 rounded-md w-fit flex items-center gap-1">
-            <User2 className="w-4 h-4" />
-            {
-              workspaceMembers.filter((member: any) =>
-                member.user.assignments?.some(
-                  (assignment: any) => assignment.taskId === id
-                )
-              ).length
-            }{" "}
-            assigned
+          <div className="flex items-center gap-2">
+            <div className="bg-zinc-200 text-zinc-600 p-1 rounded-md w-fit flex items-center gap-1">
+              <User2 className="w-4 h-4" />
+              {
+                workspaceMembers.filter((member) =>
+                  member.user.assignments?.some(
+                    (assignment) => assignment.taskId === id
+                  )
+                ).length
+              }{" "}
+              assigned
+            </div>
+            <Select
+              value={currentStatus}
+              onValueChange={(value) => {
+                handleStatusChange(
+                  value as "TODO" | "INPROGRESS" | "DONE" | "ARCHIVED"
+                );
+              }}
+            >
+              <SelectTrigger className="w-[120px]">
+                <SelectValue placeholder="Theme" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="TODO">Todo 📝</SelectItem>
+                <SelectItem value="INPROGRESS">In Progress 🕒</SelectItem>
+                <SelectItem value="DONE">Done ✅</SelectItem>
+                <SelectItem value="ARCHIVED">Archived 📖</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
-          <Select
-            value={currentStatus}
-            onValueChange={(value) => {
-              handleStatusChange(
-                value as "TODO" | "INPROGRESS" | "DONE" | "ARCHIVED"
-              );
-            }}
-          >
-            <SelectTrigger className="w-[120px]">
-              <SelectValue placeholder="Theme" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="TODO">Todo 📝</SelectItem>
-              <SelectItem value="INPROGRESS">In Progress 🕒</SelectItem>
-              <SelectItem value="DONE">Done ✅</SelectItem>
-              <SelectItem value="ARCHIVED">Archived 📖</SelectItem>
-            </SelectContent>
-          </Select>
         </div>
       </div>
     </>

@@ -58,6 +58,12 @@ export async function GET(request: Request) {
             description: true,
           },
         },
+        user: {
+          select: {
+            firstname: true,
+            lastname: true,
+          },
+        },
       },
     });
 
