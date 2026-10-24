@@ -35,7 +35,8 @@ const Member = ({
           <DialogHeader>
             <DialogTitle>Remove member</DialogTitle>
             <DialogDescription>
-              Are you sure you want to remove {member.user.firstname} {member.user.lastname} from this workspace?
+              Are you sure you want to remove {member.user.firstname}{" "}
+              {member.user.lastname} from this workspace?
             </DialogDescription>
           </DialogHeader>
           <div className="flex justify-end gap-2 mt-4">
@@ -57,7 +58,11 @@ const Member = ({
               }}
               disabled={loading}
             >
-              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Remove"}
+              {loading ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                "Remove"
+              )}
             </Button>
           </div>
         </DialogContent>
@@ -104,7 +109,7 @@ const AddMemberDialog = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function onSubmit(e: React.SubmitEvent<HTMLFormElement>) {
     e.preventDefault();
     setError("");
     const formData = new FormData(e.currentTarget);
@@ -114,13 +119,13 @@ const AddMemberDialog = ({
 
     try {
       setLoading(true);
-      const response = await addMemberAction({ workspaceId: workspaceId, email: email });
-      const result = response as { success: boolean; message: string };
-      if (result.success) {
-        setToggle(false);
-        window.location.reload();
-      } else {
-        setError(result.message || "Failed to add member");
+      const response = await addMemberAction({
+        workspaceId: workspaceId,
+        email: email,
+      });
+
+      if (!response?.data?.success) {
+        setError(response?.data?.message || "Failed to add member");
       }
     } catch {
       setError("Something went wrong");
@@ -169,7 +174,9 @@ const AddMemberDialog = ({
 
             <div className="pt-2 border-t border-slate-200">
               {members.length === 0 ? (
-                <p className="text-sm text-slate-500 text-center py-4">No members yet</p>
+                <p className="text-sm text-slate-500 text-center py-4">
+                  No members yet
+                </p>
               ) : (
                 <div className="space-y-2 max-h-64 overflow-y-auto">
                   {members.map((member) => (
