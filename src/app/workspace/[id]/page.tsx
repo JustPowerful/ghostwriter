@@ -11,6 +11,7 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
 import { headers } from "next/headers";
+import { Header } from "@/components/header";
 
 export const dynamic = "force-dynamic";
 
@@ -73,33 +74,30 @@ const page = async ({ params }: { params: Promise<{ id: string }> }) => {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-3">
-              <Link
-                href="/dashboard"
-                className={cn(
-                  buttonVariants({ variant: "ghost", size: "sm" }),
-                  "text-slate-500 hover:text-slate-900 hover:bg-slate-100"
-                )}
-              >
-                <ChevronLeft className="w-4 h-4 mr-1" /> Back
-              </Link>
-              <h1 className="text-xl font-semibold text-slate-900 flex items-center gap-2">
-                <Layout className="w-5 h-5" /> {workspace.title}
-              </h1>
-            </div>
-            <div className="flex items-center gap-2">
-              <CreateTaskDialog workspaceId={workspace.id} />
-              <GenerateEmailDialog workspaceId={workspace.id} />
-              <AddMemberDialog workspaceId={workspace.id} members={members} />
-            </div>
+      <Header />
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="mb-6 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Link
+              href="/dashboard"
+              className={cn(
+                buttonVariants({ variant: "ghost", size: "sm" }),
+                "text-slate-500 hover:text-slate-900 hover:bg-slate-100"
+              )}
+            >
+              <ChevronLeft className="w-4 h-4 mr-1" /> Back
+            </Link>
+            <h1 className="text-xl font-semibold text-slate-900 flex items-center gap-2">
+              <Layout className="w-5 h-5" /> {workspace.title}
+            </h1>
+          </div>
+          <div className="flex items-center gap-2">
+            <CreateTaskDialog workspaceId={workspace.id} />
+            <GenerateEmailDialog workspaceId={workspace.id} />
+            <AddMemberDialog workspaceId={workspace.id} members={members} />
           </div>
         </div>
-      </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="mb-6">
           <h2 className="text-lg font-medium text-slate-900 flex items-center gap-2">
             <CheckCheck className="w-5 h-5" /> Tasks

@@ -1,9 +1,10 @@
-import { Layout, Skull, Plus } from "lucide-react";
+import { Layout } from "lucide-react";
 import CreateWorkspaceDialog from "./components/create-workspace-dialog";
 import { db } from "@/lib/prisma/db";
 import { auth } from "@/lib/auth/auth";
 import WorkspaceCard from "./components/workspace-card";
 import { headers } from "next/headers";
+import { Header } from "@/components/header";
 
 export const dynamic = "force-dynamic";
 
@@ -27,17 +28,7 @@ const page = async () => {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <header className="bg-white border-b border-slate-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <h1 className="text-xl font-semibold text-slate-900 flex items-center gap-2">
-              <Skull className="w-6 h-6" /> Dashboard
-            </h1>
-            <CreateWorkspaceDialog />
-          </div>
-        </div>
-      </header>
-
+      <Header />
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
           <h2 className="text-lg font-medium text-slate-900 flex items-center gap-2">
