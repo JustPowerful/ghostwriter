@@ -30,13 +30,16 @@ const page = async () => {
     <div className="min-h-screen bg-slate-50">
       <Header />
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
-          <h2 className="text-lg font-medium text-slate-900 flex items-center gap-2">
-            <Layout className="w-5 h-5" /> Workspaces
-          </h2>
-          <p className="mt-1 text-sm text-slate-500">
-            Your workspaces and shared spaces. Create a new one to get started.
-          </p>
+        <div className="mb-8 flex items-center justify-between">
+          <div>
+            <h2 className="text-lg font-medium text-slate-900 flex items-center gap-2">
+              <Layout className="w-5 h-5" /> Workspaces
+            </h2>
+            <p className="mt-1 text-sm text-slate-500">
+              Your workspaces and shared spaces. Create a new one to get started.
+            </p>
+          </div>
+          <CreateWorkspaceDialog />
         </div>
 
         {workspaces.length === 0 ? (
