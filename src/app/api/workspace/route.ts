@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth/auth";
 import { db } from "@/lib/prisma/db";
 import { NextResponse } from "next/server";
+import { headers } from "next/headers";
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
@@ -18,7 +19,7 @@ export async function GET(request: Request) {
     );
 
   try {
-    const session = await auth();
+    const session = await auth.api.getSession({ headers: await headers() });
     if (!session) {
       return NextResponse.json(
         {
@@ -32,7 +33,6 @@ export async function GET(request: Request) {
     }
 
     const now = new Date();
-
     // Adjust to get Monday as the start of the week
     // The following code will get the start of the week (Monday) and the end of the week (Sunday)
     // And then fetch all tasks that were completed in the current week

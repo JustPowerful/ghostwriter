@@ -9,7 +9,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { AtSign, CopyIcon, Loader2 } from "lucide-react";
+import { AtSign, Copy, Loader2, X } from "lucide-react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 
@@ -20,7 +20,6 @@ const GenerateEmailDialog = ({ workspaceId }: { workspaceId: string }) => {
   const abortControllerRef = useRef<AbortController | null>(null);
   const streamRef = useRef<ReadableStream | null>(null);
 
-  // This ensures we clean up any ongoing stream when unmounting
   useEffect(() => {
     return () => {
       if (abortControllerRef.current) {
@@ -31,16 +30,13 @@ const GenerateEmailDialog = ({ workspaceId }: { workspaceId: string }) => {
 
   async function generateEmail() {
     try {
-      // Reset state
       setLoading(true);
       setEmailContent("");
 
-      // Cancel any ongoing requests
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
 
-      // Create new abort controller for this request
       abortControllerRef.current = new AbortController();
 
       console.log("Starting email generation...");
@@ -48,9 +44,7 @@ const GenerateEmailDialog = ({ workspaceId }: { workspaceId: string }) => {
         method: "POST",
         body: JSON.stringify({ workspaceId }),
         signal: abortControllerRef.current.signal,
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
       });
 
       if (!response.ok) {
@@ -61,14 +55,10 @@ const GenerateEmailDialog = ({ workspaceId }: { workspaceId: string }) => {
         throw new Error("Response doesn't have a body");
       }
 
-      // Store the stream for potential cleanup
       streamRef.current = response.body;
-
-      // Use the stream reader
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
 
-      // Start reading and processing immediately
       let done = false;
       while (!done) {
         const result = await reader.read();
@@ -76,15 +66,12 @@ const GenerateEmailDialog = ({ workspaceId }: { workspaceId: string }) => {
 
         if (result.value) {
           const text = decoder.decode(result.value, { stream: !done });
-          // Update the state with new content
           setEmailContent((currentContent) => currentContent + text);
         }
       }
     } catch (error) {
       console.error("Error generating email:", error);
-      setEmailContent(
-        (prev) => prev + "\n\nError occurred while generating email."
-      );
+      setEmailContent((prev) => prev + "\n\nError occurred while generating email.");
     } finally {
       setLoading(false);
       abortControllerRef.current = null;
@@ -96,19 +83,17 @@ const GenerateEmailDialog = ({ workspaceId }: { workspaceId: string }) => {
 
   useEffect(() => {
     if (copied) {
-      const timeout = setTimeout(() => {
-        setCopied(false);
-      }, 3000);
-
+      const timeout = setTimeout(() => setCopied(false), 3000);
       return () => clearTimeout(timeout);
     }
   }, [copied]);
 
   return (
     <div>
-      <Button onClick={() => setToggle(true)}>
-        <AtSign /> Generate Email
+      <Button variant="outline" size="sm" onClick={() => setToggle(true)}>
+        <AtSign className="w-4 h-4 mr-1.5" /> Generate email
       </Button>
+
       <Dialog
         open={toggle}
         onOpenChange={(open) => {
@@ -120,82 +105,78 @@ const GenerateEmailDialog = ({ workspaceId }: { workspaceId: string }) => {
       >
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>
-              Generate an automated email for your completed tasks.
-            </DialogTitle>
+            <DialogTitle>Generate email summary</DialogTitle>
             {!emailContent && !loading && (
               <DialogDescription>
-                This will generate an email with a summary of your completed
-                tasks for the current week.
+                Creates an email with a summary of completed tasks for this week.
               </DialogDescription>
             )}
           </DialogHeader>
 
-          {emailContent && (
-            <Button
-              className={cn(
-                "mt-2",
-                copied && "bg-green-500 hover:bg-green-500"
-              )}
-              type="button"
-              onClick={() => {
-                navigator.clipboard.writeText(emailContent);
-                setCopied(true);
-              }}
-              disabled={loading}
-            >
-              <CopyIcon /> {copied ? "Copied!" : "Copy Email Content"}
-            </Button>
-          )}
-          {/* Always show email content area when loading or when we have content */}
           {(loading || emailContent) && (
-            <div className="mt-2">
+            <div className="mt-4 space-y-3">
               {loading && (
-                <div className="flex items-center gap-2 mb-2 text-sm text-muted-foreground">
+                <div className="flex items-center gap-2 text-sm text-slate-500">
                   <Loader2 size={16} className="animate-spin" />
                   <span>Generating email...</span>
                 </div>
               )}
 
-              <div className="text-sm font-semibold">Email Content:</div>
-              <div className="relative mt-2 rounded-md border border-input bg-background p-4">
-                <pre className="text-sm whitespace-pre-wrap break-words max-h-[300px] overflow-y-auto">
-                  {emailContent || (loading ? "|" : "")}
-                </pre>
-                {loading && !emailContent && (
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <Image
-                      src={funnyImage}
-                      width={120}
-                      height={120}
-                      alt="Ghostwriter generating content"
-                      className="animate-pulse opacity-50"
-                    />
-                  </div>
-                )}
+              {emailContent && (
+                <Button
+                  className={cn(
+                    "w-full justify-start",
+                    copied && "bg-green-50 border-green-200 text-green-700 hover:bg-green-100"
+                  )}
+                  type="button"
+                  onClick={() => {
+                    navigator.clipboard.writeText(emailContent);
+                    setCopied(true);
+                  }}
+                  disabled={loading}
+                >
+                  <Copy className="w-4 h-4 mr-2" />
+                  {copied ? "Copied!" : "Copy email content"}
+                </Button>
+              )}
+
+              <div className="relative">
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                  Email Content
+                </label>
+                <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+                  <pre className="text-sm whitespace-pre-wrap break-words max-h-[300px] overflow-y-auto font-sans text-slate-900">
+                    {emailContent || (loading ? "▋" : "")}
+                  </pre>
+                  {loading && !emailContent && (
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                      <Image
+                        src={funnyImage}
+                        width={120}
+                        height={120}
+                        alt="Ghostwriter generating content"
+                        className="animate-pulse opacity-30"
+                      />
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           )}
 
-          <div className="flex justify-end mt-4">
+          <div className="flex justify-end gap-2 mt-6 pt-4 border-t border-slate-200">
+            <Button variant="outline" onClick={() => setToggle(false)} disabled={loading}>
+              <X className="w-4 h-4 mr-1.5" /> Close
+            </Button>
             <Button onClick={generateEmail} disabled={loading}>
               {loading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Generating
+                  Generating...
                 </>
               ) : (
-                "Generate Email"
+                "Generate email"
               )}
-            </Button>
-            <Button
-              type="button"
-              disabled={loading}
-              variant="secondary"
-              onClick={() => setToggle(false)}
-              className="ml-2"
-            >
-              Close
             </Button>
           </div>
         </DialogContent>

@@ -1,9 +1,10 @@
 "use server";
 import { db } from "@/lib/prisma/db";
 import { actionClient } from "@/lib/safe-action";
-import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { auth } from "@/lib/auth/auth";
+import { headers } from "next/headers";
+import { revalidatePath } from "next/cache";
 
 const schema = z.object({
   title: z.string().nonempty(),
@@ -15,7 +16,7 @@ export const createTaskAction = actionClient
   .schema(schema)
   .action(async ({ parsedInput: { title, description, workspaceId } }) => {
     try {
-      const session = await auth();
+      const session = await auth.api.getSession({ headers: await headers() });
       if (!session) {
         return {
           success: false,
@@ -50,7 +51,6 @@ export const createTaskAction = actionClient
           description,
         },
       });
-
       revalidatePath("/workspace/*");
       return {
         success: true,

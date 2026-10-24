@@ -2,10 +2,7 @@
 
 import { z } from "zod";
 import { actionClient } from "@/lib/safe-action";
-import { db } from "@/lib/prisma/db";
-import bcrypt from "bcryptjs";
-import { Prisma } from "@prisma/client";
-import { error } from "console";
+import { auth } from "@/lib/auth/auth";
 
 const schema = z
   .object({
@@ -24,31 +21,21 @@ export const registerAction = actionClient
   .schema(schema)
   .action(async ({ parsedInput: { email, password, firstname, lastname } }) => {
     try {
-      console.log(email, password, firstname, lastname);
-      const hashedPassword = await bcrypt.hash(password, 10);
-      await db.user.create({
-        data: {
+      const response = await auth.api.signUpEmail({
+        body: {
           email,
-          password: hashedPassword,
-          firstname,
-          lastname,
+          password,
+          firstname: firstname, // required by the auth service for user creation
+          lastname: lastname, // required by the auth service for user creation
+          name: `${firstname} ${lastname}`, // required initially for the auth service, but the auth service databaseHook will update the name field to be a concatenation of firstname and lastname
         },
       });
-      return {
-        success: true,
-        message: "User created",
-      };
-    } catch (error) {
-      // Handling Prisma Errors separately
-      if (error instanceof Prisma.PrismaClientKnownRequestError) {
-        // Unique constraint error for the email
-        if (error.code === "P2002") {
-          return {
-            success: false,
-            message: "Email already exists",
-          };
-        }
+      if (!response.user) {
+        return { success: false, message: "Registration failed" };
       }
+      return { success: true, message: "User created" };
+    } catch (err) {
+      console.error(err);
+      return { success: false, message: "Something went wrong" };
     }
-    throw error;
   });

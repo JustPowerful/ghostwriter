@@ -29,49 +29,53 @@ const CreateTaskDialog = ({ workspaceId }: { workspaceId: string }) => {
         description: formData.get("description") as string,
         workspaceId: workspaceId,
       });
+      setToggle(false);
     } catch (error) {
       console.error(error);
     } finally {
       setLoading(false);
-      setToggle(false);
     }
   };
 
   return (
     <div>
-      <Button
-        variant="secondary"
-        onClick={() => {
-          setToggle(true);
-        }}
-      >
-        <Plus /> Add task
+      <Button variant="outline" size="sm" onClick={() => setToggle(true)}>
+        <Plus className="w-4 h-4 mr-1.5" /> Add task
       </Button>
 
       <Dialog open={toggle} onOpenChange={setToggle}>
-        <DialogContent>
+        <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>Add a task</DialogTitle>
             <DialogDescription>
               Enter task information below to create a new task.
             </DialogDescription>
           </DialogHeader>
-          <form onSubmit={handleSubmit}>
-            <div className="flex flex-col gap-1">
-              <Label>Title</Label>
-              <Input placeholder="Task title" name="title" />
+          <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+            <div>
+              <Label className="block text-sm font-medium text-slate-700 mb-1.5">
+                Title
+              </Label>
+              <Input placeholder="Task title" name="title" required />
             </div>
-            <div className="flex flex-col gap-1 mb-2">
-              <Label>Description</Label>
-              <Textarea placeholder="Task description" name="description" />
+            <div>
+              <Label className="block text-sm font-medium text-slate-700 mb-1.5">
+                Description
+              </Label>
+              <Textarea placeholder="Task description (optional)" name="description" rows={3} />
             </div>
-            <Button className="w-full" type="submit">
-              {loading ? (
-                <Loader2 className="w-6 h-6 animate-spin" />
-              ) : (
-                "Create Task"
-              )}
-            </Button>
+            <div className="flex justify-end gap-2 pt-2">
+              <Button type="button" variant="outline" onClick={() => setToggle(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={loading}>
+                {loading ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  "Create task"
+                )}
+              </Button>
+            </div>
           </form>
         </DialogContent>
       </Dialog>

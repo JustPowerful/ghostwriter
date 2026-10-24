@@ -14,16 +14,63 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  firstname String
-  lastname String
-  email     String   @unique
-  password String 
-  workspaces Workspace[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt 
-  membership Member[] 
-  assignments Assignee[]
+  id            String   @id @default(cuid())
+  firstname     String   @default("")
+  lastname      String   @default("")
+  email         String   @unique
+  password      String   @default("")
+  name          String?
+  emailVerified Boolean  @default(false)
+  image         String?
+  workspaces    Workspace[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  membership    Member[]
+  assignments   Assignee[]
+  sessions      Session[]
+  accounts      Account[]
+}
+
+model Session {
+  id            String   @id @default(cuid())
+  token         String   @unique
+  userId        String
+  expiresAt     DateTime
+  ipAddress     String?
+  userAgent     String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  user          User     @relation(fields: [userId], references: [id])
+  @@index([userId])
+}
+
+model Account {
+  id                  String      @id @default(cuid())
+  accountId           String
+  providerId          String
+  userId              String
+  accessToken         String?
+  refreshToken        String?
+  idToken             String?
+  accessTokenExpiresAt DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope               String?
+  password            String?
+  createdAt           DateTime    @default(now())
+  updatedAt           DateTime    @updatedAt
+  user                User        @relation(fields: [userId], references: [id])
+  @@unique([accountId, providerId])
+  @@index([userId])
+}
+
+model Verification {
+  id          String   @id @default(cuid())
+  identifier  String
+  value       String
+  expiresAt   DateTime
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  @@index([identifier])
 }
 
 model Workspace {

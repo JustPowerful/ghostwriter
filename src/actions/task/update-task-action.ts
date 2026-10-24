@@ -1,8 +1,9 @@
 "use server";
-import { z } from "zod";
-import { actionClient } from "@/lib/safe-action";
-import { auth } from "@/lib/auth/auth";
 import { db } from "@/lib/prisma/db";
+import { actionClient } from "@/lib/safe-action";
+import { z } from "zod";
+import { auth } from "@/lib/auth/auth";
+import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 
 const schema = z.object({
@@ -15,7 +16,7 @@ export const updateTaskAction = actionClient
   .schema(schema)
   .action(async ({ parsedInput: { taskId, title, description } }) => {
     try {
-      const session = await auth();
+      const session = await auth.api.getSession({ headers: await headers() });
       if (!session) {
         return {
           success: false,

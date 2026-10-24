@@ -10,10 +10,13 @@ import AddMemberDialog from "./components/add-member-dialog";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
+import { headers } from "next/headers";
+
+export const dynamic = "force-dynamic";
 
 const page = async ({ params }: { params: Promise<{ id: string }> }) => {
   const { id } = await params;
-  const session = await auth();
+  const session = await auth.api.getSession({ headers: await headers() });
 
   const owner = await db.workspace.findUnique({
     where: {
@@ -28,40 +31,32 @@ const page = async ({ params }: { params: Promise<{ id: string }> }) => {
     },
   });
   if (!owner && !member) {
-    return <div>Workspace not found</div>;
+    return <div className="min-h-screen flex items-center justify-center text-slate-500">Workspace not found</div>;
   }
 
   const workspace = await db.workspace.findUnique({
-    where: {
-      id: id,
-    },
+    where: { id: id },
   });
 
   if (!workspace) {
-    return <div>Workspace not found</div>;
+    return <div className="min-h-screen flex items-center justify-center text-slate-500">Workspace not found</div>;
   }
+
   const tasksTodo = await db.tasks.findMany({
-    where: {
-      workspaceId: id,
-      status: "TODO",
-    },
+    where: { workspaceId: id, status: "TODO" },
+    orderBy: { createdAt: "desc" },
   });
   const tasksInProgress = await db.tasks.findMany({
-    where: {
-      workspaceId: id,
-      status: "INPROGRESS",
-    },
+    where: { workspaceId: id, status: "INPROGRESS" },
+    orderBy: { createdAt: "desc" },
   });
   const tasksDone = await db.tasks.findMany({
-    where: {
-      workspaceId: id,
-      status: "DONE",
-    },
+    where: { workspaceId: id, status: "DONE" },
+    orderBy: { createdAt: "desc" },
   });
+
   const members = await db.member.findMany({
-    where: {
-      workspaceId: id,
-    },
+    where: { workspaceId: id },
     include: {
       user: {
         select: {
@@ -69,10 +64,7 @@ const page = async ({ params }: { params: Promise<{ id: string }> }) => {
           firstname: true,
           lastname: true,
           assignments: {
-            select: {
-              taskId: true,
-              userId: true,
-            },
+            select: { taskId: true, userId: true },
           },
         },
       },
@@ -80,87 +72,131 @@ const page = async ({ params }: { params: Promise<{ id: string }> }) => {
   });
 
   return (
-    <div className="p-6">
-      <div className="flex items-center justify-between bg-slate-900 text-white p-4 rounded-xl">
-        <div className="flex items-center gap-2">
-          <Link
-            href="/dashboard"
-            className={cn(
-              buttonVariants(),
-              "hover:bg-zinc-200 hover:text-slate-900"
-            )}
-          >
-            <ChevronLeft /> Back
-          </Link>
-          <h1 className="text-3xl font-semibold flex items-center gap-2">
-            {" "}
-            <Layout /> {workspace.title}
-          </h1>
+    <div className="min-h-screen bg-slate-50">
+      <header className="bg-white border-b border-slate-200 sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            <div className="flex items-center gap-3">
+              <Link
+                href="/dashboard"
+                className={cn(
+                  buttonVariants({ variant: "ghost", size: "sm" }),
+                  "text-slate-500 hover:text-slate-900 hover:bg-slate-100"
+                )}
+              >
+                <ChevronLeft className="w-4 h-4 mr-1" /> Back
+              </Link>
+              <h1 className="text-xl font-semibold text-slate-900 flex items-center gap-2">
+                <Layout className="w-5 h-5" /> {workspace.title}
+              </h1>
+            </div>
+            <div className="flex items-center gap-2">
+              <CreateTaskDialog workspaceId={workspace.id} />
+              <GenerateEmailDialog workspaceId={workspace.id} />
+              <AddMemberDialog workspaceId={workspace.id} members={members} />
+            </div>
+          </div>
         </div>
-        <div className="flex gap-2 items-center">
-          <CreateTaskDialog workspaceId={workspace.id} />
-          <GenerateEmailDialog workspaceId={workspace.id} />
-          <AddMemberDialog workspaceId={workspace.id} members={members} />
+      </header>
+
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="mb-6">
+          <h2 className="text-lg font-medium text-slate-900 flex items-center gap-2">
+            <CheckCheck className="w-5 h-5" /> Tasks
+          </h2>
+          <p className="mt-1 text-sm text-slate-500">
+            Drag and drop tasks between columns. Click a task to edit.
+          </p>
         </div>
-      </div>
-      <h2 className="text-2xl font-semibold flex items-center gap-2 mt-6">
-        <CheckCheck /> Tasks
-      </h2>
-      <p>
-        You can drag and drop tasks between the columns. Click on a task to edit
-        it.
-      </p>
-      <div className="mt-6 grid grid-cols-3">
-        <DragDropZone newStatus="TODO">
-          <div className="px-5 py-2 rounded-xl bg-zinc-200 m-2">
-            <h3 className="text-xl font-semibold mb-2">Todo / Backlog 📝</h3>
-            {tasksTodo.map((task) => (
-              <Task
-                currentUserId={session!.user.id!}
-                workspaceMembers={members}
-                key={task.id}
-                title={task.title}
-                description={task.description}
-                id={task.id}
-                status={task.status}
-              />
-            ))}
-          </div>
-        </DragDropZone>
-        <DragDropZone newStatus="INPROGRESS">
-          <div className="px-5 py-2 rounded-xl bg-zinc-200 m-2">
-            <h3 className="text-xl font-semibold mb-2">In Progress 🕒</h3>
-            {tasksInProgress.map((task) => (
-              <Task
-                currentUserId={session!.user.id!}
-                workspaceMembers={members}
-                key={task.id}
-                title={task.title}
-                description={task.description}
-                id={task.id}
-                status={task.status}
-              />
-            ))}
-          </div>
-        </DragDropZone>
-        <DragDropZone newStatus="DONE">
-          <div className="px-5 py-2 rounded-xl bg-zinc-200 m-2">
-            <h3 className="text-xl font-semibold mb-2">Done ✅</h3>
-            {tasksDone.map((task) => (
-              <Task
-                currentUserId={session!.user.id!}
-                workspaceMembers={members}
-                key={task.id}
-                title={task.title}
-                description={task.description}
-                id={task.id}
-                status={task.status}
-              />
-            ))}
-          </div>
-        </DragDropZone>
-      </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <Column
+            title="Todo"
+            icon="📝"
+            tasks={tasksTodo}
+            status="TODO"
+            members={members}
+            currentUserId={session!.user.id!}
+          />
+          <Column
+            title="In Progress"
+            icon="🕒"
+            tasks={tasksInProgress}
+            status="INPROGRESS"
+            members={members}
+            currentUserId={session!.user.id!}
+          />
+          <Column
+            title="Done"
+            icon="✅"
+            tasks={tasksDone}
+            status="DONE"
+            members={members}
+            currentUserId={session!.user.id!}
+          />
+        </div>
+      </main>
     </div>
+  );
+};
+
+interface ColumnProps {
+  title: string;
+  icon: string;
+  tasks: {
+    id: string;
+    title: string;
+    description?: string | null;
+    status: string;
+  }[];
+  status: string;
+  members: {
+    id: string;
+    user: {
+      id: string;
+      firstname: string;
+      lastname: string;
+      assignments: { taskId: string; userId: string }[];
+    };
+  }[];
+  currentUserId: string;
+}
+
+const Column = ({ title, icon, tasks, status, members, currentUserId }: ColumnProps) => {
+  return (
+    <DragDropZone newStatus={status as "TODO" | "INPROGRESS" | "DONE"}>
+      <div className="bg-white rounded-2xl border border-slate-200 flex flex-col h-full min-h-[500px]">
+        <div className="p-4 border-b border-slate-200">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+              <span className="text-base">{icon}</span> {title}
+            </h3>
+            <span className="text-sm text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
+              {tasks.length}
+            </span>
+          </div>
+        </div>
+        <div className="flex-1 p-4 overflow-y-auto space-y-3">
+          {tasks.length === 0 ? (
+            <div className="text-center text-slate-400 py-8 text-sm">
+              No tasks yet. Click "Add task" to create one.
+            </div>
+          ) : (
+            tasks.map((task) => (
+              <Task
+                key={task.id}
+                currentUserId={currentUserId}
+                workspaceMembers={members}
+                title={task.title}
+                description={task.description}
+                id={task.id}
+                status={task.status as "TODO" | "INPROGRESS" | "DONE" | "ARCHIVED"}
+              />
+            ))
+          )}
+        </div>
+      </div>
+    </DragDropZone>
   );
 };
 

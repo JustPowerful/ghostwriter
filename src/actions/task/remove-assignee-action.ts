@@ -3,6 +3,7 @@ import { db } from "@/lib/prisma/db";
 import { actionClient } from "@/lib/safe-action";
 import { z } from "zod";
 import { auth } from "@/lib/auth/auth";
+import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 
 const schema = z.object({
@@ -20,7 +21,7 @@ export const removeAssigneeAction = actionClient
         where: { id: task.workspaceId },
       });
       if (!workspace) return { success: false, message: "Workspace not found" };
-      const session = await auth();
+      const session = await auth.api.getSession({ headers: await headers() });
       if (!session) return { success: false, message: "Unauthorized" };
       // check if the user is a member  or the owner of the workspace
       const isMember = await db.member.findFirst({

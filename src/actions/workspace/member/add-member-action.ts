@@ -1,8 +1,9 @@
 "use server";
-import { actionClient } from "@/lib/safe-action";
-import { z } from "zod";
 import { auth } from "@/lib/auth/auth";
 import { db } from "@/lib/prisma/db";
+import { actionClient } from "@/lib/safe-action";
+import { z } from "zod";
+import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 
 const schema = z.object({
@@ -14,16 +15,14 @@ export const addMemberAction = actionClient
   .schema(schema)
   .action(async ({ parsedInput: { workspaceId, email } }) => {
     try {
-      const session = await auth();
+      const session = await auth.api.getSession({ headers: await headers() });
       if (!session) return { success: false, message: "You are not logged in" };
       const workspace = await db.workspace.findUnique({
         where: { id: workspaceId, userId: session.user.id },
       });
       if (!workspace) return { success: false, message: "Workspace not found" };
       const user = await db.user.findUnique({
-        where: {
-          email: email,
-        },
+        where: { email: email },
       });
       if (!user) return { success: false, message: "User not found" };
 

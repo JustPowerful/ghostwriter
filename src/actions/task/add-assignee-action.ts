@@ -20,7 +20,7 @@ export const addAssigneeAction = actionClient
         where: { id: task.workspaceId },
       });
       if (!workspace) return { success: false, message: "Workspace not found" };
-      const session = await auth();
+      const session = await auth.api.getSession();
       if (!session) return { success: false, message: "Unauthorized" };
       // check if the user is a member  or the owner of the workspace
       const isMember = await db.member.findFirst({

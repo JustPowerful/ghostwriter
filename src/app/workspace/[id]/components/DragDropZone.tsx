@@ -44,10 +44,12 @@ const DragDropZone: React.FC<DragDropZoneProps> = ({ newStatus, children }) => {
       onDragEnter={handleDragEnter}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
-      className="relative transition-all duration-200"
+      className={`relative transition-all duration-200 min-h-[500px] ${
+        isDraggedOver ? "bg-sky-50 border-2 border-sky-300 rounded-2xl" : ""
+      }`}
     >
       {isDraggedOver && (
-        <div className="absolute inset-0 bg-slate-400 opacity-50 rounded-md pointer-events-none transition-all duration-200" />
+        <div className="absolute inset-0 bg-sky-100/50 rounded-2xl pointer-events-none" />
       )}
       {children}
     </div>

@@ -1,11 +1,12 @@
-export const runtime = "edge";
+export const runtime = "nodejs";
 
 import { auth } from "@/lib/auth/auth";
 import { OpenAI } from "openai";
+import { headers } from "next/headers";
 
 export async function POST(request: Request) {
   try {
-    const session = await auth();
+    const session = await auth.api.getSession({ headers: await headers() });
     if (!session) {
       return new Response(
         JSON.stringify({ success: false, message: "Unauthorized" }),

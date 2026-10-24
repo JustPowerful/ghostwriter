@@ -1,8 +1,9 @@
 "use server";
+import { auth } from "@/lib/auth/auth";
 import { db } from "@/lib/prisma/db";
 import { actionClient } from "@/lib/safe-action";
 import { z } from "zod";
-import { auth } from "@/lib/auth/auth";
+import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 
 const schema = z.object({
@@ -13,7 +14,13 @@ export const deleteWorkspaceAction = actionClient
   .schema(schema)
   .action(async ({ parsedInput: { workspaceId } }) => {
     try {
-      const session = await auth();
+      const session = await auth.api.getSession({ headers: await headers() });
+      if (!session) {
+        return {
+          success: false,
+          message: "User not authenticated",
+        };
+      }
       const workspace = await db.workspace.findUnique({
         where: {
           id: workspaceId,

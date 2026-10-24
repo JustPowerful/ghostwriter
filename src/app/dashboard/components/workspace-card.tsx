@@ -1,7 +1,7 @@
 "use client";
 import { Button } from "@/components/ui/button";
-import { CheckCheck, Layout, Router, Trash } from "lucide-react";
-import React, { useState } from "react";
+import { CheckCheck, Layout, Trash } from "lucide-react";
+import { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -15,32 +15,29 @@ import { useRouter } from "next/navigation";
 const WorkspaceCard = ({ id, title }: { id: string; title: string }) => {
   const [toggleDelete, setToggleDelete] = useState(false);
   const router = useRouter();
+
   return (
     <>
       <Dialog open={toggleDelete} onOpenChange={setToggleDelete}>
-        <DialogContent>
+        <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Are you absolutely sure?</DialogTitle>
+            <DialogTitle>Delete workspace</DialogTitle>
             <DialogDescription>
-              This action cannot be undone. This will permanently delete your
-              account and remove your data from our servers.
+              This will permanently delete "{title}" and all its tasks. This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
-          <div className="flex gap-2">
-            <Button
-              onClick={() => {
-                setToggleDelete(false);
-              }}
-            >
+          <div className="flex justify-end gap-3 mt-4">
+            <Button variant="outline" onClick={() => setToggleDelete(false)}>
               Cancel
             </Button>
             <Button
+              variant="destructive"
               onClick={() => {
                 deleteWorkspaceAction({ workspaceId: id }).then(() => {
                   setToggleDelete(false);
+                  router.refresh();
                 });
               }}
-              variant="destructive"
             >
               Delete
             </Button>
@@ -48,31 +45,44 @@ const WorkspaceCard = ({ id, title }: { id: string; title: string }) => {
         </DialogContent>
       </Dialog>
 
-      <div className="bg-gray-200 p-2 rounded-md">
-        <div className="text-xl font-semibold flex items-center gap-2 uppercase mb-2">
-          <Layout /> {title}
+      <div
+        className="group bg-white rounded-2xl border border-slate-200 p-5 hover:shadow-md hover:border-slate-300 transition-all duration-200 cursor-pointer"
+        onClick={() => router.push(`/workspace/${id}`)}
+      >
+        <div className="flex items-start justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <div className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center">
+              <Layout className="w-5 h-5 text-slate-600" />
+            </div>
+            <h3 className="font-semibold text-slate-900 text-lg truncate max-w-[200px]">
+              {title}
+            </h3>
+          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="opacity-0 group-hover:opacity-100 transition-opacity text-slate-400 hover:text-red-500 hover:bg-red-50"
+            onClick={(e) => {
+              e.stopPropagation();
+              setToggleDelete(true);
+            }}
+            aria-label="Delete workspace"
+          >
+            <Trash className="w-4 h-4" />
+          </Button>
         </div>
-        <div
-          className="flex items-center gap-2 flex-wrap grow"
-          onClick={() => {
-            // navigate using route
+
+        <Button
+          variant="outline"
+          className="w-full justify-start gap-2 text-left hover:bg-slate-50"
+          onClick={(e) => {
+            e.stopPropagation();
             router.push(`/workspace/${id}`);
           }}
         >
-          <Button className="flex-grow">
-            <CheckCheck /> Manage tasks
-          </Button>
-          <Button
-            className="flex items-center gap-2 flex-wrap grow"
-            onClick={(e) => {
-              e.stopPropagation(); // Prevent triggering navigation
-              setToggleDelete(true);
-            }}
-            variant="destructive"
-          >
-            <Trash /> Delete
-          </Button>
-        </div>
+          <CheckCheck className="w-4 h-4" />
+          <span>Manage tasks</span>
+        </Button>
       </div>
     </>
   );
