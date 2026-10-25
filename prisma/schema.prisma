@@ -22,6 +22,7 @@ model User {
   assignments   Assignee[]
   sessions      Session[]
   accounts      Account[]
+  comments      Comment[]
 }
 
 model Session {
@@ -69,10 +70,9 @@ model Verification {
 model Workspace {
   id String @id @default(cuid())
   title String
-  
+
   receiverName String // main email receiver name
   email String // main email to send the updates
-
   userId String
   user User @relation(fields: [userId], references: [id])
   ccEmails String[] // CC emails for the workspace
@@ -88,8 +88,16 @@ model Member {
   user User @relation(fields: [userId], references: [id])
   workspaceId String
   workspace Workspace @relation(fields: [workspaceId], references: [id])
+  role Role @default(viewer)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+enum Role {
+  viewer
+  editor
+  commenter
+  admin
 }
 
 model Assignee {
@@ -99,14 +107,14 @@ model Assignee {
   taskId String
   task Tasks @relation(fields: [taskId], references: [id])
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt 
+  updatedAt DateTime @updatedAt
 }
 
 model Tasks {
   id String @id @default(cuid())
   title String
   description String?
-  
+
   status TaskStatus @default(TODO) // to store the status of the task
   doneAt DateTime? // to store the data when the task was completed
 
@@ -114,11 +122,22 @@ model Tasks {
   updatedAt DateTime @updatedAt
 
   assignments Assignee[]
-
   workspace Workspace @relation(fields: [workspaceId], references: [id])
   workspaceId String
+  comments Comment[]
 }
 
+model Comment {
+  id String @id @default(cuid())
+  content String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  task Tasks @relation(fields: [taskId], references: [id])
+  taskId String
+  user User @relation(fields: [userId], references: [id])
+  userId String
+}
 
 enum TaskStatus {
   TODO
@@ -126,4 +145,3 @@ enum TaskStatus {
   DONE
   ARCHIVED // to store the task in the archive, this will not be shown in the main task list
 }
-

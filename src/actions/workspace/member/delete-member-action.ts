@@ -17,10 +17,26 @@ export const deleteMemberAction = actionClient
     try {
       const session = await auth.api.getSession({ headers: await headers() });
       if (!session) return { success: false, message: "Unauthorized" };
-      const workspace = await db.workspace.findFirst({
+      const isWorkspaceOwner = await db.workspace.findFirst({
         where: { id: workspaceId, userId: session!.user.id! },
       });
-      if (!workspace) return { success: false, message: "Workspace not found" };
+      const isWorkspaceAdmin = await db.member.findFirst({
+        where: {
+          workspaceId,
+          userId: session!.user.id!,
+          role: "admin",
+        },
+      });
+      if (!isWorkspaceOwner && !isWorkspaceAdmin)
+        return {
+          success: false,
+          message: "You are not the owner or admin of this workspace",
+        };
+
+      // check if the admin is removing themselves
+      if (session!.user.id === userId) {
+        return { success: false, message: "You cannot remove yourself" };
+      }
       const member = await db.member.findFirst({
         where: { workspaceId, userId },
       });

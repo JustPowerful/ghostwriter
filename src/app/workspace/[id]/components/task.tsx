@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Select,
@@ -17,6 +17,7 @@ import {
   UserPlus2,
   Users2,
   X,
+  MessageCircle,
 } from "lucide-react";
 
 import {
@@ -32,6 +33,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { updateTaskAction } from "@/actions/task/update-task-action";
 import { addAssigneeAction } from "@/actions/task/add-assignee-action";
 import { removeAssigneeAction } from "@/actions/task/remove-assignee-action";
+import { addCommentAction } from "@/actions/task/add-comment-action";
 
 const UpdateTaskDialog = ({
   taskId,
@@ -108,11 +110,19 @@ const UpdateTaskDialog = ({
               />
             </div>
             <div className="flex justify-end gap-2 pt-2">
-              <Button type="button" variant="outline" onClick={() => setToggle(false)}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setToggle(false)}
+              >
                 Cancel
               </Button>
               <Button type="submit" disabled={loading}>
-                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Save changes"}
+                {loading ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  "Save changes"
+                )}
               </Button>
             </div>
           </form>
@@ -135,6 +145,7 @@ interface WorkspaceMember {
     lastname: string;
     assignments: Assignment[];
   };
+  role?: "viewer" | "editor" | "commenter" | "admin";
 }
 
 const MemberAssignLabel = ({
@@ -176,7 +187,10 @@ const MemberAssignLabel = ({
           onClick={async () => {
             try {
               setLoading(true);
-              await removeAssigneeAction({ taskId, assigneeId: member.user.id });
+              await removeAssigneeAction({
+                taskId,
+                assigneeId: member.user.id,
+              });
             } catch (error) {
               console.log(error);
             } finally {
@@ -186,7 +200,11 @@ const MemberAssignLabel = ({
           disabled={loading}
           aria-label="Remove assignee"
         >
-          {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <X className="w-4 h-4" />}
+          {loading ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <X className="w-4 h-4" />
+          )}
         </Button>
       ) : (
         <Button
@@ -206,7 +224,11 @@ const MemberAssignLabel = ({
           disabled={loading}
           aria-label="Add assignee"
         >
-          {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserPlus2 className="w-4 h-4" />}
+          {loading ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <UserPlus2 className="w-4 h-4" />
+          )}
         </Button>
       )}
     </div>
@@ -243,9 +265,134 @@ const AssignmentDialog = ({
           </DialogHeader>
           <div className="space-y-1 mt-2">
             {workspaceMembers.map((member) => (
-              <MemberAssignLabel key={member.id} member={member} taskId={taskId} />
+              <MemberAssignLabel
+                key={member.id}
+                member={member}
+                taskId={taskId}
+              />
             ))}
           </div>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+};
+
+interface Comment {
+  id: string;
+  content: string;
+  createdAt: Date | string;
+  user: {
+    id: string;
+    firstname: string;
+    lastname: string;
+  };
+}
+
+const CommentItem = ({ comment }: { comment: Comment }) => {
+  return (
+    <div className="flex gap-2 py-2 border-b border-slate-100 last:border-0">
+      <div className="w-7 h-7 bg-slate-100 rounded-full flex items-center justify-center flex-shrink-0">
+        <User2 className="w-3.5 h-3.5 text-slate-600" />
+      </div>
+      <div className="flex-1">
+        <p className="text-sm text-slate-900 font-medium">
+          {comment.user.firstname} {comment.user.lastname}
+        </p>
+        <p className="text-sm text-slate-600">{comment.content}</p>
+        <span className="text-xs text-slate-400">
+          {new Date(comment.createdAt).toLocaleDateString()}
+        </span>
+      </div>
+    </div>
+  );
+};
+
+const AddCommentDialog = ({
+  taskId,
+  canComment,
+}: {
+  taskId: string;
+  canComment: boolean;
+}) => {
+  const [toggle, setToggle] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [content, setContent] = useState("");
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!content.trim()) return;
+    try {
+      setLoading(true);
+      const response = await addCommentAction({ taskId, content });
+      if (response?.data?.success) {
+        setContent("");
+        setToggle(false);
+      }
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div>
+      <Button
+        variant="ghost"
+        size="icon"
+        className={`text-slate-400 hover:text-slate-600 hover:bg-slate-100 ${canComment ? "" : "cursor-not-allowed opacity-50"}`}
+        onClick={() => setToggle(true)}
+        disabled={!canComment}
+        aria-label="Add comment"
+      >
+        <MessageCircle className="w-4 h-4" />
+      </Button>
+      <Dialog open={toggle} onOpenChange={setToggle}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Add comment</DialogTitle>
+          </DialogHeader>
+          {!canComment && (
+            <div className="p-4 bg-amber-50 border border-amber-100 rounded-lg">
+              <p className="text-sm text-amber-800">
+                You don&apos;t have permission to add comments to tasks.
+              </p>
+            </div>
+          )}
+          <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+            {canComment && (
+              <div>
+                <Label className="block text-sm font-medium text-slate-700 mb-1.5">
+                  Comment
+                </Label>
+                <Textarea
+                  placeholder="Write a comment..."
+                  name="content"
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                  rows={3}
+                  required
+                />
+              </div>
+            )}
+            <div className="flex justify-end gap-2 pt-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setToggle(false)}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" disabled={loading || !content.trim()}>
+                {loading ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  "Add comment"
+                )}
+              </Button>
+            </div>
+          </form>
         </DialogContent>
       </Dialog>
     </div>
@@ -259,6 +406,7 @@ const Task = ({
   status,
   workspaceMembers,
   currentUserId,
+  userRole,
 }: {
   id: string;
   title: string;
@@ -266,11 +414,20 @@ const Task = ({
   status: "TODO" | "INPROGRESS" | "DONE" | "ARCHIVED";
   workspaceMembers: WorkspaceMember[];
   currentUserId: string;
+  userRole: "viewer" | "editor" | "commenter" | "admin";
 }) => {
   const [currentStatus, setCurrentStatus] = useState<
     "TODO" | "INPROGRESS" | "DONE" | "ARCHIVED"
   >(status);
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [commentsLoading, setCommentsLoading] = useState(false);
   const router = useRouter();
+
+  // Compute current user's role from workspaceMembers if not passed
+  const currentUserMember = workspaceMembers.find(
+    (member) => member.user.id === currentUserId,
+  );
+  const effectiveRole = userRole || currentUserMember?.role || "viewer";
 
   const isCurrentUserAssigned = workspaceMembers.some(
     (member) =>
@@ -282,9 +439,31 @@ const Task = ({
     member.user.assignments?.some((assignment) => assignment.taskId === id),
   );
 
+  const canEdit = ["editor", "admin"].includes(effectiveRole);
+  const canMove = ["editor", "admin"].includes(effectiveRole);
+  const canComment = ["commenter", "editor", "admin"].includes(effectiveRole);
+
+  useEffect(() => {
+    void (async function () {
+      setCommentsLoading(true);
+      try {
+        const res = await fetch(`/api/tasks/${id}/comments`);
+        if (res.ok) {
+          const data = await res.json();
+          setComments(data.comments || []);
+        }
+      } catch (error) {
+        console.log(error);
+      } finally {
+        setCommentsLoading(false);
+      }
+    })();
+  }, [id]);
+
   const handleStatusChange = async (
     value: "TODO" | "INPROGRESS" | "DONE" | "ARCHIVED",
   ) => {
+    if (!canMove) return;
     setCurrentStatus(value);
     await fetch("/api/updateTaskStatus", {
       method: "POST",
@@ -296,10 +475,14 @@ const Task = ({
 
   return (
     <div
-      className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm hover:shadow-md transition-shadow cursor-grab"
-      draggable
+      className={`bg-white rounded-xl border border-slate-200 p-4 shadow-sm transition-shadow ${
+        canMove ? "hover:shadow-md cursor-grab" : "cursor-default"
+      }`}
+      draggable={canMove}
       onDragStart={(e) => {
-        e.dataTransfer.setData("taskId", id);
+        if (canMove) {
+          e.dataTransfer.setData("taskId", id);
+        }
       }}
     >
       <div className="flex items-start justify-between gap-3 mb-3">
@@ -310,14 +493,69 @@ const Task = ({
           <h4 className="font-medium text-slate-900 truncate">{title}</h4>
         </div>
         <div className="flex items-center gap-1 flex-shrink-0">
-          <UpdateTaskDialog taskId={id} title={title} description={description ?? ""} />
-          <AssignmentDialog taskId={id} workspaceMembers={workspaceMembers} />
+          {canEdit && (
+            <UpdateTaskDialog
+              taskId={id}
+              title={title}
+              description={description ?? ""}
+            />
+          )}
+          {!canEdit && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-slate-400 cursor-not-allowed opacity-50"
+              aria-label="Edit task (viewer)"
+              disabled
+            >
+              <Edit className="w-4 h-4" />
+            </Button>
+          )}
+          {canMove && (
+            <AssignmentDialog taskId={id} workspaceMembers={workspaceMembers} />
+          )}
+          {!canMove && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-slate-400 cursor-not-allowed opacity-50"
+              aria-label="Manage assignees (viewer)"
+              disabled
+            >
+              <Users2 className="w-4 h-4" />
+            </Button>
+          )}
+          <AddCommentDialog taskId={id} canComment={canComment} />
         </div>
       </div>
 
       {description && (
-        <p className="text-sm text-slate-500 mb-3 line-clamp-2">{description}</p>
+        <p className="text-sm text-slate-500 mb-3 line-clamp-2">
+          {description}
+        </p>
       )}
+
+      <div className="mt-4 pt-3 border-t border-slate-100">
+        <div className="flex items-center gap-2 mb-2">
+          <MessageCircle className="w-4 h-4 text-slate-500" />
+          <h5 className="text-sm font-medium text-slate-900">Comments</h5>
+        </div>
+        {commentsLoading ? (
+          <div className="h-24 flex items-center justify-center text-slate-400 text-sm">
+            Loading comments...
+          </div>
+        ) : comments.length === 0 ? (
+          <div className="h-24 flex items-center justify-center text-slate-400 text-sm">
+            No comments yet
+          </div>
+        ) : (
+          <div className="space-y-0 max-h-64 overflow-y-auto">
+            {comments.map((comment) => (
+              <CommentItem key={comment.id} comment={comment} />
+            ))}
+          </div>
+        )}
+      </div>
 
       <div className="flex items-center justify-between pt-3 border-t border-slate-100">
         <div className="flex items-center gap-2">
@@ -330,6 +568,7 @@ const Task = ({
         </div>
         <Select
           value={currentStatus}
+          disabled={!canMove}
           onValueChange={(value) => {
             handleStatusChange(
               value as "TODO" | "INPROGRESS" | "DONE" | "ARCHIVED",

@@ -39,6 +39,16 @@ const page = async ({ params }: { params: Promise<{ id: string }> }) => {
     );
   }
 
+  // Determine current user's role for permission gating
+  const userRole = owner
+    ? ("admin" as const)
+    : member?.role || ("viewer" as const);
+
+  const isOwner = Boolean(owner);
+  const canCreateTask = ["editor", "admin"].includes(userRole);
+  const canGenerateEmail = ["editor", "admin"].includes(userRole);
+  const canManageMembers = ["admin"].includes(userRole);
+
   const workspace = await db.workspace.findUnique({
     where: { id: id },
   });
@@ -100,15 +110,24 @@ const page = async ({ params }: { params: Promise<{ id: string }> }) => {
             </h1>
           </div>
           <div className="flex items-center gap-2">
-            <CreateTaskDialog workspaceId={workspace.id} />
-            <GenerateEmailDialog workspaceId={workspace.id} />
-            <AddMemberDialog workspaceId={workspace.id} members={members} />
+            {canCreateTask && <CreateTaskDialog workspaceId={workspace.id} />}
+            {canGenerateEmail && (
+              <GenerateEmailDialog workspaceId={workspace.id} />
+            )}
+            {canManageMembers && (
+              <AddMemberDialog
+                workspaceId={workspace.id}
+                members={members}
+                isOwner={isOwner}
+                currentUserId={session!.user.id!}
+              />
+            )}
           </div>
         </div>
 
         <div className="mb-6">
           <h2 className="text-lg font-medium text-slate-900 flex items-center gap-2">
-            <CheckCheck className="w-5 h-5" /> Tasks
+            <CheckCheck className="w-5 h-5" /> Tasks{" "}
           </h2>
           <p className="mt-1 text-sm text-slate-500">
             Drag and drop tasks between columns. Click a task to edit.
@@ -123,6 +142,7 @@ const page = async ({ params }: { params: Promise<{ id: string }> }) => {
             status="TODO"
             members={members}
             currentUserId={session!.user.id!}
+            userRole={userRole}
           />
           <Column
             title="In Progress"
@@ -131,6 +151,7 @@ const page = async ({ params }: { params: Promise<{ id: string }> }) => {
             status="INPROGRESS"
             members={members}
             currentUserId={session!.user.id!}
+            userRole={userRole}
           />
           <Column
             title="Done"
@@ -139,6 +160,7 @@ const page = async ({ params }: { params: Promise<{ id: string }> }) => {
             status="DONE"
             members={members}
             currentUserId={session!.user.id!}
+            userRole={userRole}
           />
         </div>
       </main>
@@ -158,6 +180,7 @@ interface ColumnProps {
   status: string;
   members: {
     id: string;
+    role: "viewer" | "editor" | "commenter" | "admin";
     user: {
       id: string;
       firstname: string;
@@ -166,6 +189,7 @@ interface ColumnProps {
     };
   }[];
   currentUserId: string;
+  userRole: "viewer" | "editor" | "commenter" | "admin";
 }
 
 const Column = ({
@@ -175,6 +199,7 @@ const Column = ({
   status,
   members,
   currentUserId,
+  userRole,
 }: ColumnProps) => {
   return (
     <DragDropZone newStatus={status as "TODO" | "INPROGRESS" | "DONE"}>
@@ -206,6 +231,7 @@ const Column = ({
                 status={
                   task.status as "TODO" | "INPROGRESS" | "DONE" | "ARCHIVED"
                 }
+                userRole={userRole}
               />
             ))
           )}

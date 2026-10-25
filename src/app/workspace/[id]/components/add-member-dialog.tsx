@@ -10,82 +10,118 @@ import {
 import { Button } from "@/components/ui/button";
 import { Loader2, Trash, User, Users } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { addMemberAction } from "@/actions/workspace/member/add-member-action";
 import { deleteMemberAction } from "@/actions/workspace/member/delete-member-action";
+import { changeMemberRoleAction } from "@/actions/workspace/member/change-member-role-action";
 
 const Member = ({
   member,
   workspaceId,
   userId,
+  currentUserId,
+  isOwner,
 }: {
   member: {
     id: string;
     user: { id: string; firstname: string; lastname: string };
+    role?: "viewer" | "editor" | "commenter" | "admin";
   };
+  isOwner?: boolean;
   workspaceId: string;
+  currentUserId: string;
   userId: string;
 }) => {
-  const [toggle, setToggle] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [selectedRole, setSelectedRole] = useState<
+    "viewer" | "editor" | "commenter" | "admin"
+  >(member.role || "viewer");
+
+  async function onRoleChange(
+    nextRole: "viewer" | "editor" | "commenter" | "admin",
+  ) {
+    try {
+      setLoading(true);
+      setSelectedRole(nextRole);
+      await changeMemberRoleAction({
+        workspaceId,
+        memberId: member.id,
+        role: nextRole,
+      });
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <div className="flex items-center justify-between p-3 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors">
-      <Dialog open={toggle} onOpenChange={setToggle}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Remove member</DialogTitle>
-            <DialogDescription>
-              Are you sure you want to remove {member.user.firstname}{" "}
-              {member.user.lastname} from this workspace?
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex justify-end gap-2 mt-4">
-            <Button variant="outline" onClick={() => setToggle(false)}>
-              Cancel
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={async () => {
-                try {
-                  setLoading(true);
-                  await deleteMemberAction({ workspaceId, userId });
-                  setToggle(false);
-                } catch (error) {
-                  console.log(error);
-                } finally {
-                  setLoading(false);
-                }
-              }}
-              disabled={loading}
-            >
-              {loading ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                "Remove"
-              )}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-
       <div className="flex items-center gap-3">
         <div className="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center">
           <User className="w-4 h-4 text-slate-600" />
         </div>
-        <span className="font-medium text-slate-900">
-          {member.user.firstname} {member.user.lastname}
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="font-medium text-slate-900">
+            {member.user.firstname} {member.user.lastname}
+          </span>
+          {isOwner ? (
+            <Select
+              value={selectedRole}
+              onValueChange={(value) =>
+                onRoleChange(
+                  value as "viewer" | "editor" | "commenter" | "admin",
+                )
+              }
+              disabled={loading}
+            >
+              <SelectTrigger className="h-8 w-30">
+                <SelectValue placeholder="Role" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="viewer">Viewer</SelectItem>
+                <SelectItem value="editor">Editor</SelectItem>
+                <SelectItem value="commenter">Commenter</SelectItem>
+                <SelectItem value="admin">Admin</SelectItem>
+              </SelectContent>
+            </Select>
+          ) : (
+            <span className="text-xs text-slate-500 capitalize">
+              {selectedRole}
+            </span>
+          )}
+        </div>
       </div>
 
-      <Button
-        variant="ghost"
-        size="icon"
-        className="text-slate-400 hover:text-red-500 hover:bg-red-50"
-        onClick={() => setToggle(true)}
-        aria-label="Remove member"
-      >
-        <Trash className="w-4 h-4" />
-      </Button>
+      {member.user.id !== currentUserId && (
+        <Button
+          variant="ghost"
+          size="icon"
+          className="text-slate-400 hover:text-red-500 hover:bg-red-50"
+          onClick={async () => {
+            try {
+              setLoading(true);
+              await deleteMemberAction({ workspaceId, userId });
+            } catch (error) {
+              console.log(error);
+            } finally {
+              setLoading(false);
+            }
+          }}
+          disabled={loading}
+          aria-label="Remove member"
+        >
+          {loading ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <Trash className="w-4 h-4" />
+          )}
+        </Button>
+      )}
     </div>
   );
 };
@@ -93,9 +129,12 @@ const Member = ({
 const AddMemberDialog = ({
   members,
   workspaceId,
+  isOwner,
+  currentUserId,
 }: {
   members: {
     id: string;
+    role?: "viewer" | "editor" | "commenter" | "admin";
     user: {
       id: string;
       firstname: string;
@@ -104,6 +143,8 @@ const AddMemberDialog = ({
     };
   }[];
   workspaceId: string;
+  isOwner: boolean;
+  currentUserId: string;
 }) => {
   const [toggle, setToggle] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -182,9 +223,11 @@ const AddMemberDialog = ({
                   {members.map((member) => (
                     <Member
                       key={member.user.id}
+                      currentUserId={currentUserId}
                       member={member}
                       workspaceId={workspaceId}
                       userId={member.user.id}
+                      isOwner={isOwner}
                     />
                   ))}
                 </div>
