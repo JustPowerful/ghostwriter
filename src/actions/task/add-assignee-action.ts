@@ -4,6 +4,7 @@ import { actionClient } from "@/lib/safe-action";
 import { z } from "zod";
 import { auth } from "@/lib/auth/auth";
 import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
 
 const schema = z.object({
   taskId: z.string(),
@@ -20,7 +21,7 @@ export const addAssigneeAction = actionClient
         where: { id: task.workspaceId },
       });
       if (!workspace) return { success: false, message: "Workspace not found" };
-      const session = await auth.api.getSession();
+      const session = await auth.api.getSession({ headers: await headers() });
       if (!session) return { success: false, message: "Unauthorized" };
       // check if the user is a member  or the owner of the workspace
       const isMember = await db.member.findFirst({
