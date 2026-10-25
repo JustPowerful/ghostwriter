@@ -41,7 +41,7 @@ export const addAssigneeAction = actionClient
       });
       revalidatePath("/workspace/*");
       return { success: true, message: "Assignee added" };
-    } catch (error) {
+    } catch {
       return { success: false, message: "There was a problem" };
     }
   });

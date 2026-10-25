@@ -56,7 +56,7 @@ export const createTaskAction = actionClient
         success: true,
         message: "Task created successfully",
       };
-    } catch (error) {
+    } catch {
       return {
         success: false,
         message: "Something went wrong",

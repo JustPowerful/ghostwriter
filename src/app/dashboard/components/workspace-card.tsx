@@ -23,7 +23,8 @@ const WorkspaceCard = ({ id, title }: { id: string; title: string }) => {
           <DialogHeader>
             <DialogTitle>Delete workspace</DialogTitle>
             <DialogDescription>
-              This will permanently delete "{title}" and all its tasks. This action cannot be undone.
+              This will permanently delete &quot;{title}&quot; and all its
+              tasks. This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <div className="flex justify-end gap-3 mt-4">

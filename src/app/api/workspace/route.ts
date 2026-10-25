@@ -15,7 +15,7 @@ export async function GET(request: Request) {
       },
       {
         status: 400,
-      }
+      },
     );
 
   try {
@@ -28,7 +28,7 @@ export async function GET(request: Request) {
         },
         {
           status: 401,
-        }
+        },
       );
     }
 
@@ -75,14 +75,14 @@ export async function GET(request: Request) {
         },
         {
           status: 404,
-        }
+        },
       );
 
     return NextResponse.json({
       success: true,
       workspace: workspace,
     });
-  } catch (error) {
+  } catch {
     return NextResponse.json({
       success: false,
       message: "Something went wrong",

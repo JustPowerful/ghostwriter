@@ -48,7 +48,7 @@ export const createWorkspaceAction = actionClient
         message: "Workspace created successfully",
         workspace,
       };
-    } catch (error) {
+    } catch {
       return {
         success: false,
         message: "Error creating workspace",

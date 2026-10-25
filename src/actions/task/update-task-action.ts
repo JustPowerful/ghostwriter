@@ -71,7 +71,7 @@ export const updateTaskAction = actionClient
         success: true,
         message: "Successfully updated the task",
       };
-    } catch (error) {
+    } catch {
       return {
         success: false,
         message: "An error occurred while updating the task",

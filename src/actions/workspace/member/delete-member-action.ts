@@ -28,7 +28,7 @@ export const deleteMemberAction = actionClient
       await db.member.delete({ where: { id: member.id } });
       revalidatePath("/workspace/*");
       return { success: true, message: "Member deleted" };
-    } catch (error) {
+    } catch {
       return { success: false, message: "Something went wrong" };
     }
   });

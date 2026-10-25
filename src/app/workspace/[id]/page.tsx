@@ -32,7 +32,11 @@ const page = async ({ params }: { params: Promise<{ id: string }> }) => {
     },
   });
   if (!owner && !member) {
-    return <div className="min-h-screen flex items-center justify-center text-slate-500">Workspace not found</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center text-slate-500">
+        Workspace not found
+      </div>
+    );
   }
 
   const workspace = await db.workspace.findUnique({
@@ -40,7 +44,11 @@ const page = async ({ params }: { params: Promise<{ id: string }> }) => {
   });
 
   if (!workspace) {
-    return <div className="min-h-screen flex items-center justify-center text-slate-500">Workspace not found</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center text-slate-500">
+        Workspace not found
+      </div>
+    );
   }
 
   const tasksTodo = await db.tasks.findMany({
@@ -82,7 +90,7 @@ const page = async ({ params }: { params: Promise<{ id: string }> }) => {
               href="/dashboard"
               className={cn(
                 buttonVariants({ variant: "ghost", size: "sm" }),
-                "text-slate-500 hover:text-slate-900 hover:bg-slate-100"
+                "text-slate-500 hover:text-slate-900 hover:bg-slate-100",
               )}
             >
               <ChevronLeft className="w-4 h-4 mr-1" /> Back
@@ -160,7 +168,14 @@ interface ColumnProps {
   currentUserId: string;
 }
 
-const Column = ({ title, icon, tasks, status, members, currentUserId }: ColumnProps) => {
+const Column = ({
+  title,
+  icon,
+  tasks,
+  status,
+  members,
+  currentUserId,
+}: ColumnProps) => {
   return (
     <DragDropZone newStatus={status as "TODO" | "INPROGRESS" | "DONE"}>
       <div className="bg-white rounded-2xl border border-slate-200 flex flex-col h-full min-h-[500px]">
@@ -177,7 +192,7 @@ const Column = ({ title, icon, tasks, status, members, currentUserId }: ColumnPr
         <div className="flex-1 p-4 overflow-y-auto space-y-3">
           {tasks.length === 0 ? (
             <div className="text-center text-slate-400 py-8 text-sm">
-              No tasks yet. Click "Add task" to create one.
+              No tasks yet. Click &quot;Add task&quot; to create one.
             </div>
           ) : (
             tasks.map((task) => (
@@ -188,7 +203,9 @@ const Column = ({ title, icon, tasks, status, members, currentUserId }: ColumnPr
                 title={task.title}
                 description={task.description}
                 id={task.id}
-                status={task.status as "TODO" | "INPROGRESS" | "DONE" | "ARCHIVED"}
+                status={
+                  task.status as "TODO" | "INPROGRESS" | "DONE" | "ARCHIVED"
+                }
               />
             ))
           )}

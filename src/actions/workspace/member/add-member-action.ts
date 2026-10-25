@@ -44,7 +44,7 @@ export const addMemberAction = actionClient
       });
       revalidatePath("/workspace/*");
       return { success: true, message: "Member added", member };
-    } catch (error) {
+    } catch {
       return { success: false, message: "Something went wrong" };
     }
   });

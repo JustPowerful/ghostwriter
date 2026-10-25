@@ -42,7 +42,7 @@ export const removeAssigneeAction = actionClient
       });
       revalidatePath("/workspace/*");
       return { success: true, message: "Assignee removed" };
-    } catch (error) {
+    } catch {
       return { success: false, message: "There was a problem" };
     }
   });

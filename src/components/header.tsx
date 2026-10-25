@@ -31,7 +31,7 @@ export function Header() {
   const handleLogout = async () => {
     try {
       // logout using better-auth client
-      const res = await authClient.signOut({
+      await authClient.signOut({
         fetchOptions: {
           onSuccess: () => {
             window.location.href = "/login";

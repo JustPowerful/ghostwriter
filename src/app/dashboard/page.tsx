@@ -10,14 +10,32 @@ export const dynamic = "force-dynamic";
 
 const page = async () => {
   const session = await auth.api.getSession({ headers: await headers() });
+  if (!session) {
+    return (
+      <div className="min-h-screen bg-slate-50">
+        <Header />
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center">
+            <Layout className="w-12 h-12 mx-auto text-slate-300 mb-4" />
+            <h3 className="text-lg font-medium text-slate-900 mb-2">
+              You are not logged in
+            </h3>
+            <p className="text-slate-500 mb-6">
+              Please log in to view your workspaces and shared spaces.
+            </p>
+          </div>
+        </main>
+      </div>
+    );
+  }
   const workspaces = await db.workspace.findMany({
     where: {
       OR: [
-        { userId: session?.user.id! },
+        { userId: session.user.id! },
         {
           members: {
             some: {
-              userId: session?.user.id!,
+              userId: session.user.id!,
             },
           },
         },
@@ -36,7 +54,8 @@ const page = async () => {
               <Layout className="w-5 h-5" /> Workspaces
             </h2>
             <p className="mt-1 text-sm text-slate-500">
-              Your workspaces and shared spaces. Create a new one to get started.
+              Your workspaces and shared spaces. Create a new one to get
+              started.
             </p>
           </div>
           <CreateWorkspaceDialog />

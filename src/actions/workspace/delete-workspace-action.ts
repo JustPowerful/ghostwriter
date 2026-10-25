@@ -38,7 +38,7 @@ export const deleteWorkspaceAction = actionClient
         success: true,
         message: "Workspace deleted successfully",
       };
-    } catch (error) {
+    } catch {
       return {
         success: false,
         message: "There was an error deleting the workspace",
